@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Current Location Map</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://api-maps.yandex.ru/2.1/?lang=en_US" type="text/css" />
+    <style>
+        #map { height: 600px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_US&apikey=YOUR_API_KEY" type="text/javascript"></script>
+    <!-- 请确保将YOUR_API_KEY替换为你的实际Yandex地图API密钥 -->
+    <script>
+        ymaps.ready(init);
+
+        function init() {
+            // 替换这里的[YOUR_LATITUDE, YOUR_LONGITUDE]为你的实际经纬度
+            var myCoordinates = [58.053707, 56.218273];
+
+            var map = new ymaps.Map('map', {
+                center: myCoordinates,
+                zoom: 10, // 适当的缩放级别以展示当前位置
+                controls: ['zoomControl', 'fullscreenControl', 'geolocationControl']
+            });
+
+            // 创建一个标记来表示当前位置
+            var myPlacemark = new ymaps.Placemark(myCoordinates, {
+                hintContent: 'My Current Location',
+                balloonContent: 'This is where I am!'
+            });
+
+            // 将标记添加到地图上
+            map.geoObjects.add(myPlacemark);
+
+            // 如果需要，可以通过geolocationControl来自动定位用户位置
+            // 但这里我们已经有了坐标，所以直接使用了它们
+        }
+    </script>
+</body>
+</html>

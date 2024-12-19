@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Prices Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Title and Bar Chart -->
+    <h2>Gold Prices Bar Chart (Open Prices)</h2>
+    <canvas id="barChart"></canvas>
+
+    <!-- Line Chart -->
+    <h2>Gold Prices Line Chart (Close Prices)</h2>
+    <canvas id="lineChart"></canvas>
+
+    <!-- Pie Chart -->
+    <h2>Gold Prices Pie Chart (Volume)</h2>
+    <canvas id="pieChart"></canvas>
+
+    <!-- Scatter Chart -->
+    <h2>Gold Prices Scatter Chart (High vs Low)</h2>
+    <canvas id="scatterChart"></canvas>
+
+    <!-- Polar Area Chart -->
+    <h2>Gold Prices Polar Area Chart (Open Prices)</h2>
+    <canvas id="polarAreaChart"></canvas>
+    <script>
+        function csvJSON(csv) {
+            var lines = csv.split("\r");
+            var result = [];
+            var headers = lines[0].split(",");
+            for (var i = 1; i < lines.length; i++) {
+                var obj = {};
+                var currentline = lines[i].split(",");
+                for (var j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = currentline[j];
+                }
+                result.push(obj);
+            }
+            return result; //JSON
+        }
+    
+        async function getData(path) {
+            const data = await fetch(path);
+            const csv = await data.text();
+            const result = csvJSON(csv);
+            return result;
+        }
+    </script>
+    <script>
+        // Function to load data from CSV
+        // async function getData(filePath) {
+        //     // Simulate fetching data from a CSV file
+        //     // In reality, you might use fetch() or another method to get the data
+        //     return [
+        //         { Date: '2023-10-01', Open: 1900, High: 1950, Low: 1850, Close: 1920, Volume: 12000 },
+        //         { Date: '2023-10-02', Open: 1920, High: 1970, Low: 1860, Close: 1930, Volume: 13000 },
+        //         { Date: '2023-10-03', Open: 1930, High: 1980, Low: 1870, Close: 1940, Volume: 14000 },
+        //         // ... more data
+        //     ];
+        // }
+
+        // Load data
+        getData("./Gold  Prices.csv").then(data => {
+            // Process data using map, reduce, and filter
+            const dates = data.map(d => d.Date);
+            const openPrices = data.map(d => d.Open);
+            const closePrices = data.map(d => d.Close);
+            const volumes = data.map(d => d.Volume);
+            const highPrices = data.map(d => d.High);
+            const lowPrices = data.map(d => d.Low);
+
+            // Bar Chart
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Open Prices',
+                        data: openPrices,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Line Chart
+            new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Close Prices',
+                        data: closePrices,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Pie Chart
+            const totalVolume = volumes.reduce((acc, vol) => acc + vol, 0);
+            const volumeData = data.map(d => ({ label: d.Date, value: d.Volume }));
+            new Chart(document.getElementById('pieChart'), {
+                type: 'pie',
+                data: {
+                    labels: volumeData.map(d => d.label),
+                    datasets: [{
+                        label: 'Volumes',
+                        data: volumeData.map(d => d.value),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            // Add more colors as needed
+                        ]
+                    }]
+                }
+            });
+
+            // Scatter Chart
+            new Chart(document.getElementById('scatterChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'High vs Low',
+                        data: highPrices.map((high, index) => ({ x: lowPrices[index], y: high })),
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Polar Area Chart
+            new Chart(document.getElementById('polarAreaChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Open Prices',
+                        data: openPrices,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            // Add more colors as needed
+                        ]
+                    }]
+                }
+            });
+        });
+    </script>
+</body>
+</html>

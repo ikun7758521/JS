@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Basic Yandex Map</title>
+    <script
+      src="https://api-maps.yandex.ru/2.1/?lang=en_RU&apikey=43b864cd-fce8-474d-b4ba-192753074cb1"
+      type="text/javascript"
+    ></script>
+  </head>
+  <body>
+    <h1>Basic Yandex Map</h1>
+    <div id="map" style="width: 600px; height: 400px"></div>
+    <script>
+      ymaps.ready(() => {
+        const map = new ymaps.Map("map", {
+          center: [58.0000, 56.31000],
+          zoom: 10,
+        });
+        // The placemark
+        const placemark = new ymaps.Placemark([58.0, 56.31], {
+            balloonContent: "<strong>Perm</strong><br>Capital of Russia",
+        });
+        map.geoObjects.add(placemark);
+
+        // Clustering
+        const points = [
+            [58.0, 56.31],
+            [58.0, 56.32],
+          [58.0, 56.33],
+            [58.0, 56.34],
+            [58.0, 56.35],
+        ];
+       const geoObjects = points.map((point) => new ymaps.Placemark(point));
+        const clusterer = new ymaps.Clusterer();
+        clusterer.add(geoObjects);
+        map.geoObjects.add(clusterer);
+ });
+
+  
+    </script>
+  </body>
+</html>

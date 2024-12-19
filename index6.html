@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Region Map of France</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/css" />
+    <style>
+        #map { height: 600px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=43b864cd-fce8-474d-b4ba-192753074cb1" type="text/javascript"></script>
+    <!-- 请确保将YOUR_API_KEY替换为你的实际Yandex地图API密钥 -->
+    <script>
+        ymaps.ready(init);
+
+        function init() {
+            // 设置地图中心点为法国巴黎，并调整缩放级别
+            var map = new ymaps.Map('map', {
+                center: [48.856614, 2.352222], // 巴黎的经纬度
+                zoom: 5, // 较低的缩放级别以展示整个法国
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+
+            // 加载并显示GeoJSON数据
+            fetch('regions.geojson.json') // 确保这个文件包含法国的GeoJSON数据
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 直接使用ymaps.geoQuery来解析GeoJSON数据
+                    var geoObjects = ymaps.geoQuery(data);
+                    geoObjects.addToMap(map);
+
+                    // 根据GeoJSON数据的边界调整地图视图
+                    var bounds = geoObjects.getBounds();
+                    if (bounds) {
+                        map.setBounds(bounds, {
+                            checkZoomRange: true, // 确保缩放级别在允许范围内
+                            useMapMargin: true // 在地图边界和地理对象之间添加一些空间
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading or parsing the regions:', error);
+                });
+        }
+    </script>
+</body>
+</html>

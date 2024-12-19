@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yandex Map with Rectangle Polygon</title>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=en_RU&apikey=YOUR_API_KEY" type="text/javascript"></script>
+    <style>
+        #map {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Yandex Map with Rectangle Polygon</h1>
+    <div id="map"></div>
+    <script>
+        ymaps.ready(() => {
+            // 提供的四个坐标点，构成矩形的四个角
+            const coords1 = [58.0541, 56.2187]; // 左上角
+            const coords2 = [59.0541, 56.2228]; // 右下角（纬度相同，经度增加）
+            const coords3 = [58.0520, 56.2228]; // 右下角（经度相同，纬度减少）
+            const coords4 = [60.0520, 65.2187]; // 左上角（回到起点，闭合矩形，但实际上在Yandex API中不需要闭合）
+
+            // 注意：在Yandex API中，多边形不需要手动闭合，
+            // 所以我们可以只提供前三个点（或任意三个相邻点），
+            // 然后API会自动将它们与第一个点连接起来形成闭合图形。
+            // 但为了清晰起见，这里我还是列出了四个点。
+
+            // 创建多边形坐标数组（实际上只需要前三个点）
+            const polygonCoordinates = [
+                coords1,
+                coords2,
+                coords3,
+                 coords4 // 这行是可选的，因为Yandex会自动闭合多边形
+            ];
+
+            // 由于我们有了矩形的所有四个角，计算中心点会更准确
+            const centerCoords = [
+                (coords1[0] + coords3[0]) / 2, // 取对角线的两个点的纬度平均值
+                (coords1[1] + coords2[1]) / 2  // 取对角线的两个点的经度平均值（或者也可以取另一对对角线）
+            ];
+            // 注意：上面的中心点计算是基于矩形对角线的中点，这是准确的。
+            // 但为了简化，你也可以简单地取左上角和右下角的中点（即纬度和经度的平均值），
+            // 这在矩形不是太大且地图投影影响较小时是可行的。
+
+            // 创建地图
+            const map = new ymaps.Map("map", {
+                center: centerCoords,
+                zoom: 15, // 适当的缩放级别以展示多边形
+            });
+
+            // 创建多边形并添加到地图上（只需要前三个点）
+            const polygon = new ymaps.Polygon([
+                [coords1, coords2, coords3] // 这里只提供了三个点，但多边形在地图上会显示为闭合的矩形
+            ], {
+                fillColor: '#FF000055', // 半透明的红色填充
+                strokeColor: '#FF0000', // 红色边框
+                strokeWidth: 2, // 边框宽度
+            });
+            map.geoObjects.add(polygon);
+
+            // 调整地图视图以包含多边形（可选）
+            map.setBounds(polygon.getBounds(), {
+                checkZoomRange: true,
+                useMapMargin: true
+            });
+
+            // 添加点击事件监听器（可选）
+            map.events.add('click', (e) => {
+                const coords = e.get('coords');
+                alert(`You clicked at coordinates: ${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+</body>
+<script>
+    function csvJSON(csv) {
+      var lines = csv.split("\n");
+      var result = [];
+      var headers = lines[0].split(",");
+      for (var i = 1; i < lines.length; i++) {
+        var obj = {};
+        var currentline = lines[i].split(",");
+        for (var j = 0; j < headers.length; j++) {
+          obj[headers[j]] = currentline[j];
+        }
+        result.push(obj);
+      }
+      return result; // JSON
+    }
+  
+    async function getData(path) {
+      const data = await fetch(path);
+      const csv = await data.text();
+      const result = csvJSON(csv);
+      return result;
+    }
+  
+    // Asynchronously get the data from the CSV file
+    getData("./students_large.csv").then((file) => {
+      console.log(file);
+  
+      // Prepare the data for the radar chart
+      const maleData = file.filter((e) => e.sex === "Male");
+      const femaleData = file.filter((e) => e.sex === "Female");
+  
+      // Extract values for radar chart: score, study_hours, salary
+      const labels = ["Score", "Study Hours", "Salary"]; // Radar chart categories
+  
+      // Calculate average values for male students, dividing salary by 1000
+      const maleValues = [
+        maleData.reduce((acc, curr) => acc + parseFloat(curr.score), 0) / maleData.length,
+        maleData.reduce((acc, curr) => acc + parseFloat(curr.study_hours*10), 0) / maleData.length,
+        maleData.reduce((acc, curr) => acc + parseFloat(curr.salary) / 200, 0) / maleData.length, // salary / 1000
+      ];
+  
+      // Calculate average values for female students, dividing salary by 1000
+      const femaleValues = [
+        femaleData.reduce((acc, curr) => acc + parseFloat(curr.score), 0) / femaleData.length,
+        femaleData.reduce((acc, curr) => acc + parseFloat(curr.study_hours*10), 0) / femaleData.length,
+        femaleData.reduce((acc, curr) => acc + parseFloat(curr.salary) / 200, 0) / femaleData.length, // salary / 1000
+      ];
+  
+      // Create radar chart
+      new Chart(document.getElementById("myChart"), {
+        type: "radar",  // Set the chart type to radar
+        data: {
+          labels: labels,  // Radar chart categories
+          datasets: [
+            {
+              label: "Male Students",
+              data: maleValues,  // Male students' average values for score, study hours, salary
+              borderColor: "rgba(54, 162, 235, 1)",
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              borderWidth: 1,
+            },
+            {
+              label: "Female Students",
+              data: femaleValues,  // Female students' average values for score, study hours, salary
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,  // Start scale at zero
+              angleLines: {
+                display: false,  // Hide the radial grid lines
+              },
+              suggestedMin: 0,  // Min value suggestion
+              suggestedMax: 100, // Max value suggestion
+            },
+          },
+          responsive: true,  // Make the chart responsive
+          plugins: {
+            legend: {
+              position: "top",  // Position of the legend
+            },
+          },
+        },
+      });
+    });
+  </script>
+</html>

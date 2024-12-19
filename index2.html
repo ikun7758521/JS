@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <canvas id="myChart1"></canvas>
+</body>
+<script>
+    function csvJSON(csv) {
+        var lines = csv.split("\r");
+        var result = [];
+        var headers = lines[0].split(",");
+        for (var i = 1; i < lines.length; i++) {
+            var obj = {};
+            var currentline = lines[i].split(",");
+            for (var j = 0; j < headers.length; j++) {
+                obj[headers[j]] = currentline[j];
+            }
+            result.push(obj);
+        }
+        return result; //JSON
+    }
+
+    async function getData(path) {
+        const data = await fetch(path);
+        const csv = await data.text();
+        const result = csvJSON(csv);
+        return result;
+    }
+</script>
+<script>
+    const ctx = document.getElementById("myChart1");
+    getData("./students_large.csv").then((file) => {
+        console.log(file);
+
+        // Prepare data
+        const students = file.map((each) => ({
+            x: Number(each.study_hours),
+            y: Number(each.score),
+            r: Number(each.salary) / 1000,
+            g: each.sex,
+        }));
+        console.log(students)
+
+        new Chart(ctx, {
+            type: "bubble",
+            data: {
+                labels: file.map((e) => e.score),
+                datasets: [
+                    {
+                        label: "Man marks",
+                        data: students.filter((s) => s.g === "Male"),
+                        borderWidth: 1,
+                    },
+                    {
+                        label: "Woman marks",
+                        data: students.filter((s) => s.g === "Female"),
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'some x text'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'some y text'
+                        }
+                    }
+                }
+            }
+        });
+
+    });
+</script>
